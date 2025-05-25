@@ -54,7 +54,7 @@ class PublicStatusCRUD:
         incident_service_map = db.query(
             service_incident_association.c.service_id,
             Incident
-        ).join(Incident, Incident.incident_id == service_incident_association.c.incident_id, Incident.is_deleted == False).filter(
+        ).join(Incident, and_(Incident.incident_id == service_incident_association.c.incident_id, Incident.is_deleted == False)).filter(
             Incident.organization_id == org_id,
             Incident.status != IncidentStatus.RESOLVED,
             service_incident_association.c.service_id.in_(service_ids)
