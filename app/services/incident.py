@@ -235,6 +235,16 @@ class IncidentService(ServiceCRUD):
             incident.updated_at = datetime.now()
             db.commit()
 
+            db.query(IncidentUpdate).filter(
+                IncidentUpdate.incident_id == incident.incident_id,
+                IncidentUpdate.organization_id == organization.organization_id,
+                IncidentUpdate.is_deleted == False,
+            ).update(
+                {IncidentUpdate.is_deleted: True},
+                synchronize_session=False
+            )
+            db.commit()
+
             # Broadcast real-time update
             background_tasks.add_task(
                 broadcast,
