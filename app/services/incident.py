@@ -316,6 +316,7 @@ class IncidentService(ServiceCRUD):
             incident_updates = db.query(IncidentUpdate).order_by(IncidentUpdate.created_at.desc()).filter(
                 IncidentUpdate.organization_id == organization.organization_id,
                 IncidentUpdate.incident_id == incident_id,
-                Incident.is_deleted == False
+                Incident.is_deleted == False,
+                IncidentUpdate.is_deleted == False,
             ).all()
             return [IncidentUpdateRead.model_validate(iu) for iu in incident_updates]

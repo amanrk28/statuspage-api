@@ -40,13 +40,13 @@ class PublicStatusCRUD:
         )
 
     def _get_organization(self, db: Session, slug: str) -> Organization:
-        org = db.query(Organization).filter(Organization.name == slug).first()
+        org = db.query(Organization).filter(Organization.name == slug, Organization.is_deleted == False).first()
         if not org:
             raise HTTPException(status_code=404, detail="Organization not found")
         return org
 
     def _get_services(self, db: Session, org_id: int) -> List[Service]:
-        services = db.query(Service).filter(Service.organization_id == org_id).order_by(Service.service_id.desc()).all()
+        services = db.query(Service).filter(Service.organization_id == org_id, Service.is_deleted == False).order_by(Service.service_id.desc()).all()
         return services
 
     def _get_incidents_by_service(self, db: Session, services: List[Service], org_id: int) -> Dict[int, List[Incident]]:
@@ -54,7 +54,7 @@ class PublicStatusCRUD:
         incident_service_map = db.query(
             service_incident_association.c.service_id,
             Incident
-        ).join(Incident, Incident.incident_id == service_incident_association.c.incident_id).filter(
+        ).join(Incident, Incident.incident_id == service_incident_association.c.incident_id, Incident.is_deleted == False).filter(
             Incident.organization_id == org_id,
             Incident.status != IncidentStatus.RESOLVED,
             service_incident_association.c.service_id.in_(service_ids)
@@ -74,7 +74,8 @@ class PublicStatusCRUD:
             and_(
                 StatusHistory.organization_id == org_id,
                 StatusHistory.created_at >= start_date,
-                StatusHistory.created_at <= end_date
+                StatusHistory.created_at <= end_date,
+                StatusHistory.is_deleted == False,
             )
         ).order_by(StatusHistory.created_at).all()
 
